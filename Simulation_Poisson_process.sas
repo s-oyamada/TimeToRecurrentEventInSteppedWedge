@@ -163,14 +163,11 @@ data ttre_5_;
 run;
 
 data ttre;
-  set ttre_5_(in=in1 keep=studybegin stepend studyend switchdate dropdate switchtime entrydate cluster recdate1 obenddate1 survtime1 TStart1 TStop1 Status1 sim
- id
+  set ttre_5_(in=in1 keep=studybegin stepend studyend switchdate dropdate switchtime entrydate cluster recdate1 obenddate1 survtime1 TStart1 TStop1 Status1 sim id
                      rename=(recdate1=recdate obenddate1=obenddate survtime1=survtime TStart1=TStart TStop1=TStop Status1=Status))
-      ttre_5_(in=in2 keep=studybegin stepend studyend switchdate dropdate switchtime entrydate cluster recdate2 obenddate2 survtime2 TStart2 TStop2 Status2 sim
- id
+      ttre_5_(in=in2 keep=studybegin stepend studyend switchdate dropdate switchtime entrydate cluster recdate2 obenddate2 survtime2 TStart2 TStop2 Status2 sim id
                      rename=(recdate2=recdate obenddate2=obenddate survtime2=survtime TStart2=TStart TStop2=TStop Status2=Status))
-      ttre_5_(in=in3 keep=studybegin stepend studyend switchdate dropdate switchtime entrydate cluster recdate3 obenddate3 survtime3 TStart3 TStop3 Status3 sim
- id
+      ttre_5_(in=in3 keep=studybegin stepend studyend switchdate dropdate switchtime entrydate cluster recdate3 obenddate3 survtime3 TStart3 TStop3 Status3 sim id
                      rename=(recdate3=recdate obenddate3=obenddate survtime3=survtime TStart3=TStart TStop3=TStop Status3=Status))
   ;
   if in1 then visit=1;
