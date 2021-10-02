@@ -1,6 +1,6 @@
 /*
 
-******************************************************************************************
+*********************************************************************************************************************************************
   Program name : Simulation_Weibull_model.sas
   Author : Shunsuke Oyamada
   SAS version : 9.4
@@ -9,8 +9,8 @@
   Reference : Oyamada S, Chiu SW, Liu WM, Forbat L, Yamaguchi T, 2021.
               Comparison of analysis methods for time-to-recurrent-event in stepped wedge cluster randomized trial using open cohort design.
               Under submission to journal.
-  Notes : This simulation code contains only the analyses with cluster stratification.
-******************************************************************************************
+  Notes : This simulation code contains only the analyses with stratification by clusters.
+*********************************************************************************************************************************************
 
 Copyright (c) 2021 Shunsuke Oyamada
 
@@ -164,9 +164,9 @@ run;
 
 
 /*
-**************************************************************
-  CoxPH(Cox Proportional Hazards) model, stratify by clusters
-**************************************************************
+************************************************************************
+  CoxPH(Cox Proportional Hazards) model with stratification by clusters
+************************************************************************
 */
 ods output parameterestimates=cox_strt;
 ods listing close;
@@ -193,9 +193,9 @@ run;
 
 
 /*
-************************************************
-  AG(Andersen-Gill) model, stratify by clusters
-************************************************
+**********************************************************
+  AG(Andersen-Gill) model with stratification by clusters
+**********************************************************
 */
 ods output parameterestimates=ag_strt;
 ods listing close;
@@ -238,9 +238,9 @@ run;
 
 
 /*
-*************************************************************************
-  PWP(Prentice-Williams-Peterson) Total-Time model, stratify by clusters
-*************************************************************************
+***********************************************************************************
+  PWP(Prentice-Williams-Peterson) Total-Time model with stratification by clusters
+***********************************************************************************
 */
 ods output parameterestimates=pwp_tt_strt;
 ods listing close;
@@ -265,9 +265,9 @@ run;
 
 
 /*
-***********************************************************************
-  PWP(Prentice-Williams-Peterson) Gap-Time model, stratify by clusters
-***********************************************************************
+*********************************************************************************
+  PWP(Prentice-Williams-Peterson) Gap-Time model with stratification by clusters
+*********************************************************************************
 */
 ods output parameterestimates=pwp_gt_strt;
 ods listing close;
@@ -301,28 +301,28 @@ title1 "Weibull, n=&cluster_size, m=&cluster_num, steplength=&switch_distance, s
 title2 "intervention_effect=&intv_effect, scale1=&scale1, shape1=&shape1, scale23=&scale23, shape23=&shape23, sim_num=&sim_num" ;
 
 
-title3 'CoxPH(Cox Proportional Hazards), stratify by clusters';
+title3 'CoxPH(Cox Proportional Hazards) model with stratification by clusters';
 proc means data = cox_strt_est n mean;
   var estimate bias mse cover;
   output out=cox_strt_summary n= mean= / autoname; run;
 run;
 
 
-title3 'AG(Andersen-Gill), stratify by clusters';
+title3 'AG(Andersen-Gill) model with stratification by clusters';
 proc means data = ag_strt_est n mean;
   var estimate bias mse cover;
   output out=ag_strt_summary n= mean= / autoname; run;
 run;
 
 
-title3 'PWP(Prentice-Williams-Peterson) Total-Time, stratify by clusters';
+title3 'PWP(Prentice-Williams-Peterson) Total-Time model with stratification by clusters';
 proc means data = pwp_tt_strt_est n mean;
   var estimate bias mse cover;
   output out=pwp_tt_strt_summary n= mean= / autoname; run;
 run;
 
 
-title3 'PWP(Prentice-Williams-Peterson) Gap-Time, stratify by clusters';
+title3 'PWP(Prentice-Williams-Peterson) Gap-Time model with stratification by clusters';
 proc means data = pwp_gt_strt_est n mean;
   var estimate bias mse cover;
   output out=pwp_gt_strt_summary n= mean= / autoname; run;
