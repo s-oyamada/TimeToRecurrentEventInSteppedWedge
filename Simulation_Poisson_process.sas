@@ -1,16 +1,16 @@
 /*
 
-*********************************************************************************************************************************************
+******************************************************************************************************************************************************************************************
   Program name : Simulation_Poisson_process.sas
   Author : Shunsuke Oyamada
   SAS version : 9.4
   Description : Simulation of time-to-recurrent-event generated based on Poisson process
                 in a stepped wedge cluster randomized trial using open cohort design
-  Reference : Oyamada S, Chiu SW, Liu WM, Forbat L, Yamaguchi T, 2021.
-              Comparison of analysis methods for time-to-recurrent-event in stepped wedge cluster randomized trial using open cohort design.
+  Reference : Oyamada S, Chiu SW, Yamaguchi T, 2021.
+              Comparison of statistical models for estimating intervention effects based on time-to-recurrent-event in stepped wedge cluster randomized trial using open cohort design.
               Under submission to journal.
   Notes : This simulation code contains only the analyses with stratification by clusters.
-*********************************************************************************************************************************************
+******************************************************************************************************************************************************************************************
 
 Copyright (c) 2021 Shunsuke Oyamada
 
