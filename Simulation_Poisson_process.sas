@@ -4,15 +4,15 @@
   Program name : Simulation_Poisson_process.sas
   Author : Shunsuke Oyamada
   SAS version : 9.4
-  Description : Simulation of time-to-recurrent-event generated based on Poisson process
+  Description : Simulation of time-to-recurrent-event generated based on (Mixed-) Poisson process
                 in a stepped wedge cluster randomized trial using open cohort design
-  Reference : Oyamada S, Chiu SW, Yamaguchi T, 2021.
+  Reference : Oyamada S, Chiu SW, Yamaguchi T, 2022.
               Comparison of statistical models for estimating intervention effects based on time-to-recurrent-event in stepped wedge cluster randomized trial using open cohort design.
               Under submission to journal.
   Notes : This simulation code contains only the analyses with stratification by clusters.
 ******************************************************************************************************************************************************************************************
 
-Copyright (c) 2021 Shunsuke Oyamada
+Copyright (c) 2022 Shunsuke Oyamada
 
 */
 
@@ -24,7 +24,8 @@ Copyright (c) 2021 Shunsuke Oyamada
  intv_effect=,       /*true intervention effect (regression coefficient)*/
  scale=,             /*scale parameter of exponential distribution*/
  sim_num=,           /*number of simulations*/
- sigma=,             /*variance on the random effect representing the variation between clusters*/
+ sigma_c=,           /*variance on the random effect representing the variation between clusters*/
+ sigma_s=,           /*variance on the random effect representing the variation between subjects*/
  entry=,             /*timing of trial entry*/
  follow=,            /*follow-up period*/
  entry_range=,       /*acceptable range of entry to the trial, stepend or studyend*/
@@ -32,7 +33,8 @@ Copyright (c) 2021 Shunsuke Oyamada
  seed_r1=,           /*seed of the pseudo-random number to be used for the 1st time-to-recurrent-event*/
  seed_r2=,           /*seed of the pseudo-random number to be used for the 2nd time-to-recurrent-event*/
  seed_r3=,           /*seed of the pseudo-random number to be used for the 3rd time-to-recurrent-event*/
- seed_c=             /*seed of pseudo-random number to be used to determine the cluster effect*/
+ seed_c=,            /*seed of pseudo-random number to be used to determine the cluster effect*/
+ seed_s=             /*seed of pseudo-random number to be used to determine the inter-individual variability*/
 );
 
 
@@ -43,16 +45,18 @@ Copyright (c) 2021 Shunsuke Oyamada
 */
 data ttre_ (drop= _:);
   steplength = &switch_distance;
-  retain _prn1 &seed_e _prn2 &seed_r1 _prn3 &seed_r2 _prn4 &seed_r3 _prn5 &seed_c;
+  retain _prn1 &seed_e _prn2 &seed_r1 _prn3 &seed_r2 _prn4 &seed_r3 _prn5 &seed_c _prn6 &seed_s;
   do sim = 1 to &sim_num;
     do cluster = 1 to &cluster_num;
-    call rannor(_prn5, _error);
-    error = &sigma*_error;
+    call rannor(_prn5, _cerror);
+    cerror = &sigma_c*_cerror;
       do id = 1 to &cluster_size;
         call ranuni(_prn1,_e);
         call ranuni(_prn2,_u1);
         call ranuni(_prn3,_u2);
         call ranuni(_prn4,_u3);
+        call rannor(_prn6, _serror);
+        serror = &sigma_s*_serror;
 
         *generate SWCRT scheme;
         studybegin = '01feb2017'd;
@@ -72,7 +76,7 @@ data ttre_ (drop= _:);
         _logu1  = -log(_u1);
         _logu2  = -log(_u2);
         _logu3  = -log(_u3);
-        _linpre = error;
+        _linpre = cerror + serror;
         _scalee = &scale*exp(_linpre);
         _nom1   = _logu1-_scalee*(switchtime)+&scale*exp(_linpre+&intv_effect)*(switchtime);
         _nom2   = _logu2-_scalee*(switchtime)+&scale*exp(_linpre+&intv_effect)*(switchtime);
@@ -180,35 +184,6 @@ proc sort data=ttre; by sim cluster id visit; run;
 data ttre;
   set ttre;
   if obenddate < studybegin then delete;
-run;
-
-
-/*
-************************************************************************
-  CoxPH(Cox Proportional Hazards) model with stratification by clusters
-************************************************************************
-*/
-ods output parameterestimates=cox_strt;
-ods listing close;
-proc phreg data = ttre;
-  class cluster;
-  model survtime*Status(0)=z_t/rl ties=exact;
-  if survtime < switchtime then z_t=0; else z_t=1;
-  strata cluster;
-  by sim;
-  where visit=1;
-run;
-
-data cox_strt_est;
-  set cox_strt;
-  where parameter='z_t';
-  variable = parameter;
-  model    = 'cox';
-  true     = &intv_effect;
-  bias     = estimate-true;
-  mse      = bias**2;
-  cover    = (hrlowercl<= exp(true)<= hruppercl);
-  drop parameter;
 run;
 
 
@@ -365,15 +340,8 @@ proc sort data=ttre_pwp out=ttre_cens nodupkey; by sim cluster id; run;
 *********
 */
 ods listing;
-title1 "Poisson, n=&cluster_size, m=&cluster_num, steplength=&switch_distance, sigma=&sigma, entry=&entry" ;
-title2 "follow=&follow, entry_range=&entry_range, intervention_effect=&intv_effect, scale=&scale, sim_num=&sim_num" ;
-
-
-title3 'CoxPH(Cox Proportional Hazards) model with stratification by clusters';
-proc means data = cox_strt_est n mean;
-  var estimate bias mse cover;
-  output out=cox_strt_summary n= mean= / autoname; run;
-run;
+title1 "Poisson, n=&cluster_size, m=&cluster_num, steplength=&switch_distance, sigma_c=&sigma_c, sigma_s=&sigma_s" ;
+title2 "entry=&entry, follow=&follow, entry_range=&entry_range, intervention_effect=&intv_effect, scale=&scale, sim_num=&sim_num" ;
 
 
 title3 'AG(Andersen-Gill) model with stratification by clusters';
