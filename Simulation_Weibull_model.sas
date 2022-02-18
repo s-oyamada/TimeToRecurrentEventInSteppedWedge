@@ -6,13 +6,13 @@
   SAS version : 9.4
   Description : Simulation of time-to-recurrent-event generated based on Weibull model
                 in a stepped wedge cluster randomized trial using open cohort design
-  Reference : Oyamada S, Chiu SW, Yamaguchi T, 2021.
+  Reference : Oyamada S, Chiu SW, Yamaguchi T, 2022.
               Comparison of statistical models for estimating intervention effects based on time-to-recurrent-event in stepped wedge cluster randomized trial using open cohort design.
               Under submission to journal.
   Notes : This simulation code contains only the analyses with stratification by clusters.
 *****************************************************************************************************************************************************************************************
 
-Copyright (c) 2021 Shunsuke Oyamada
+Copyright (c) 2022 Shunsuke Oyamada
 
 */
 
@@ -160,35 +160,6 @@ proc sort data=ttre; by sim cluster id visit; run;
 data ttre;
   set ttre;
   if obenddate < studybegin then delete;
-run;
-
-
-/*
-************************************************************************
-  CoxPH(Cox Proportional Hazards) model with stratification by clusters
-************************************************************************
-*/
-ods output parameterestimates=cox_strt;
-ods listing close;
-proc phreg data = ttre;
-  class cluster;
-  model survtime*Status(0)=z_t/rl ties=exact;
-  if survtime < switchtime then z_t=0; else z_t=1;
-  strata cluster;
-  by sim;
-  where visit=1;
-run;
-
-data cox_strt_est;
-  set cox_strt;
-  where parameter='z_t';
-  variable = parameter;
-  model    = 'cox';
-  true     = &intv_effect;
-  bias     = estimate-true;
-  mse      = bias**2;
-  cover    = (hrlowercl<= exp(true)<= hruppercl);
-  drop parameter;
 run;
 
 
@@ -347,13 +318,6 @@ proc sort data=ttre_pwp out=ttre_cens nodupkey; by sim cluster id; run;
 ods listing;
 title1 "Weibull, n=&cluster_size, m=&cluster_num, steplength=&switch_distance, sigma=&sigma, entry=&entry", follow=&follow, entry_range=&entry_range, ;
 title2 "intervention_effect=&intv_effect, scale1=&scale1, shape1=&shape1, scale23=&scale23, shape23=&shape23, sim_num=&sim_num" ;
-
-
-title3 'CoxPH(Cox Proportional Hazards) model with stratification by clusters';
-proc means data = cox_strt_est n mean;
-  var estimate bias mse cover;
-  output out=cox_strt_summary n= mean= / autoname; run;
-run;
 
 
 title3 'AG(Andersen-Gill) model with stratification by clusters';
